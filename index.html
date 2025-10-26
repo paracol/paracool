@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paracool - خافض للحرارة وعلاج البرد والكحة</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* تنسيق القائمة الجانبية - مستطيل صغير جداً */
+        .floating-nav {
+            position: fixed;
+            top: 50%;
+            left: 15px;
+            transform: translateY(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(10px);
+            padding: 6px 3px;
+            border-radius: 6px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            min-width: auto;
+            width: auto;
+        }
+
+        .floating-nav.hidden {
+            opacity: 0;
+            transform: translateY(-50%) translateX(-15px);
+            pointer-events: none;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 1px;
+            background: var(--primary-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-dot.active {
+            background: var(--primary);
+            transform: scale(1.3);
+        }
+
+        .nav-dot::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 3px 6px;
+            border-radius: 3px;
+            font-size: 0.65rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 1001;
+        }
+
+        .nav-dot:hover::after {
+            opacity: 1;
+        }
+
+        /* تعديل صورة المنتج لتظهر كاملة */
+        .bottle-image {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+        }
+
+        .bottle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            border-radius: 25px 25px 70px 70px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            transform-style: preserve-3d;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow: hidden;
+            transition: transform 0.5s;
+        }
+
+        .bottle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient);
+            opacity: 0.1;
+            z-index: 1;
+        }
+
+        /* باقي الكود يبقى كما هو */
+        :root {
+            --primary: #2E86AB;
+            --primary-light: #5BB2E8;
+            --primary-dark: #1A5A7A;
+            --secondary: #A23B72;
+            --accent: #F18F01;
+            --light: #F8F9FA;
+            --dark: #2D3047;
+            --success: #3BB273;
+            --gradient: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            --gradient-dark: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            color: var(--dark);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Header Styles - Compact and Hidden on Scroll Down */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 999;
+            padding: 12px 0;
+            transition: all 0.4s ease;
+            transform: translateY(0);
+        }
+        
+        header.hidden {
+            transform: translateY(-100%);
+        }
+        
+        header.compact {
+            padding: 8px 0;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        header.compact .logo {
+            gap: 8px;
+        }
+        
+        .logo-img {
+            height: 40px;
+            width: auto;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+            transition: all 0.3s ease;
+        }
+        
+        header.compact .logo-img {
+            height: 32px;
+        }
+        
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        header.compact .logo-text {
+            font-size: 1.3rem;
+        }
+        
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+            transition: all 0.3s ease;
+        }
+        
+        header.compact nav ul {
+            gap: 20px;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 600;
+            transition: all 0.3s;
+            position: relative;
+            font-size: 1rem;
+            padding: 5px 0;
+        }
+        
+        header.compact nav a {
+            font-size: 0.9rem;
+        }
+        
+        nav a:hover {
+            color: var(--primary);
+        }
+        
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            right: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s;
+            border-radius: 2px;
+        }
+        
+        nav a:hover::after {
+            width: 100%;
+        }
+        
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1585435557343-3b092031d5ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80') no-repeat center center;
+            background-size: cover;
+            opacity: 0.1;
+            z-index: -1;
+        }
+        
+        .hero-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 50px;
+            width: 100%;
+        }
+        
+        .hero-text {
+            flex: 1;
+            max-width: 600px;
+            animation: fadeInUp 1s ease;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(241, 143, 1, 0.3);
+            font-size: 0.9rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .hero-title {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            line-height: 1.2;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 1s ease 0.2s both;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: var(--dark);
+            opacity: 0.8;
+            font-weight: 600;
+            animation: fadeInUp 1s ease 0.4s both;
+        }
+        
+        .hero-description {
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            animation: fadeInUp 1s ease 0.6s both;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 32px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            box-shadow: 0 6px 20px rgba(46, 134, 171, 0.3);
+            animation: fadeInUp 1s ease 0.8s both;
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(46, 134, 171, 0.4);
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+            box-shadow: 0 6px 20px rgba(162, 59, 114, 0.3);
+        }
+        
+        .btn-secondary:hover {
+            box-shadow: 0 10px 25px rgba(162, 59, 114, 0.4);
+            background: #8A2E5D;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            box-shadow: none;
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .hero-visual {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1200px;
+            animation: fadeIn 1s ease 0.5s both;
+        }
+        
+        .bottle-container {
+            position: relative;
+            width: 320px;
+            height: 450px;
+            transform-style: preserve-3d;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .bottle:hover {
+            transform: rotateY(15deg) rotateX(5deg);
+        }
+        
+        .bottle-label {
+            position: relative;
+            z-index: 3;
+            text-align: center;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            margin-top: 20px;
+            width: 90%;
+        }
+        
+        .bottle-name {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        .bottle-details {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .bottle-cap {
+            position: absolute;
+            top: -25px;
+            width: 70px;
+            height: 35px;
+            background: var(--accent);
+            border-radius: 12px 12px 0 0;
+            z-index: 4;
+            box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .floating-elements {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            right: 0;
+            pointer-events: none;
+        }
+        
+        .floating-element {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 50%;
+            animation: float-element 15s infinite linear;
+        }
+        
+        .floating-element:nth-child(1) {
+            width: 30px;
+            height: 30px;
+            top: 20%;
+            right: 10%;
+            animation-delay: 0s;
+        }
+        
+        .floating-element:nth-child(2) {
+            width: 20px;
+            height: 20px;
+            top: 60%;
+            right: 20%;
+            animation-delay: 2s;
+        }
+        
+        .floating-element:nth-child(3) {
+            width: 40px;
+            height: 40px;
+            top: 40%;
+            right: 5%;
+            animation-delay: 4s;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotateY(0deg);
+            }
+            50% {
+                transform: translateY(-25px) rotateY(10deg);
+            }
+        }
+        
+        @keyframes float-element {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0.7;
+            }
+            50% {
+                transform: translateY(-30px) rotate(180deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(0) rotate(360deg);
+                opacity: 0.7;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 120px 0;
+            background: white;
+            position: relative;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.8rem;
+            margin-bottom: 70px;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            right: 50%;
+            transform: translateX(50%);
+            width: 100px;
+            height: 4px;
+            background: var(--primary);
+            border-radius: 2px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 35px;
+        }
+        
+        .feature-card {
+            background: var(--light);
+            border-radius: 20px;
+            padding: 35px 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s;
+        }
+        
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 25px;
+            color: var(--primary);
+            transition: transform 0.4s;
+        }
+        
+        .feature-card:hover .feature-icon {
+            transform: scale(1.2);
+        }
+        
+        .feature-title {
+            font-size: 1.6rem;
+            margin-bottom: 18px;
+            color: var(--dark);
+        }
+        
+        .feature-description {
+            color: #555;
+            font-size: 1.05rem;
+        }
+        
+        /* Usage Section */
+        .usage {
+            padding: 120px 0;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            position: relative;
+        }
+        
+        .usage-content {
+            display: flex;
+            align-items: center;
+            gap: 60px;
+        }
+        
+        .usage-text {
+            flex: 1;
+        }
+        
+        .usage-title {
+            font-size: 2.2rem;
+            margin-bottom: 30px;
+            color: var(--primary);
+        }
+        
+        .usage-list {
+            list-style: none;
+            margin: 30px 0;
+        }
+        
+        .usage-list li {
+            margin-bottom: 18px;
+            padding-right: 40px;
+            position: relative;
+            font-size: 1.1rem;
+        }
+        
+        .usage-list li::before {
+            content: '✓';
+            position: absolute;
+            right: 0;
+            top: 0;
+            color: var(--success);
+            font-weight: bold;
+            font-size: 1.4rem;
+        }
+        
+        .usage-visual {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .symptoms {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            justify-content: center;
+            max-width: 500px;
+        }
+        
+        .symptom {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 20px;
+            width: 160px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .symptom::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.4s;
+        }
+        
+        .symptom:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .symptom:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .symptom-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            transition: transform 0.4s;
+        }
+        
+        .symptom:hover .symptom-icon {
+            transform: scale(1.2);
+        }
+        
+        .symptom p {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        /* Leaflet Section */
+        .leaflet {
+            padding: 100px 0;
+            background: white;
+            text-align: center;
+        }
+        
+        .leaflet-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .leaflet-image {
+            max-width: 300px;
+            margin: 0 auto 30px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+        
+        .leaflet-image:hover {
+            transform: scale(1.05);
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 70px 0 25px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 50px;
+            margin-bottom: 50px;
+        }
+        
+        .footer-section h3 {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            color: var(--accent);
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .footer-section h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50px;
+            height: 3px;
+            background: var(--accent);
+            border-radius: 2px;
+        }
+        
+        .footer-section p, .footer-section a {
+            color: #ddd;
+            margin-bottom: 12px;
+            display: block;
+            text-decoration: none;
+            transition: all 0.3s;
+            line-height: 1.7;
+        }
+        
+        .footer-section a:hover {
+            color: var(--accent);
+            transform: translateX(-5px);
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+        
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-5px);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.95rem;
+            color: #aaa;
+        }
+        
+        /* Particle Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            background: rgba(46, 134, 171, 0.1);
+            border-radius: 50%;
+            animation: particle-float 20s infinite linear;
+        }
+        
+        @keyframes particle-float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                transform: translateY(-1000px) rotate(360deg);
+            }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1100px) {
+            .hero-content {
+                gap: 40px;
+            }
+            
+            .hero-title {
+                font-size: 3rem;
+            }
+            
+            .floating-nav {
+                left: 10px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .hero-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .hero-title {
+                font-size: 2.8rem;
+            }
+            
+            .usage-content {
+                flex-direction: column;
+            }
+            
+            .bottle-container {
+                width: 280px;
+                height: 400px;
+            }
+            
+            .floating-nav {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                gap: 20px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero-title {
+                font-size: 2.4rem;
+            }
+            
+            .section-title {
+                font-size: 2.2rem;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .bottle-container {
+                width: 240px;
+                height: 350px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .section-title {
+                font-size: 1.8rem;
+            }
+            
+            .btn {
+                padding: 12px 25px;
+                font-size: 1rem;
+            }
+            
+            .bottle-container {
+                width: 200px;
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Particle Background -->
+    <div class="particles" id="particles"></div>
+    
+    <!-- Floating Navigation - مستطيل صغير جداً -->
+    <div class="floating-nav" id="floatingNav">
+        <div class="nav-dot active" data-tooltip="الرئيسية" data-section="home"></div>
+        <div class="nav-dot" data-tooltip="المميزات" data-section="features"></div>
+        <div class="nav-dot" data-tooltip="الاستخدامات" data-section="usage"></div>
+        <div class="nav-dot" data-tooltip="النشرة" data-section="leaflet"></div>
+        <div class="nav-dot" data-tooltip="اتصل بنا" data-section="contact"></div>
+    </div>
+
+    <!-- باقي الكود يبقى كما هو -->
+    <!-- Header - Compact and Hidden on Scroll -->
+    <header id="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <img src="logo.png" alt="Paracool Logo" class="logo-img">
+                    <div class="logo-text">Paracool</div>
+                </div>
+                <nav>
+                    <ul>
+                        <li><a href="#home">الرئيسية</a></li>
+                        <li><a href="#features">المميزات</a></li>
+                        <li><a href="#usage">الاستخدامات</a></li>
+                        <li><a href="#leaflet">النشرة</a></li>
+                        <li><a href="#contact">اتصل بنا</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-bg"></div>
+        <div class="floating-elements">
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+            <div class="floating-element"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <div class="hero-badge">خافض للحرارة - مسكن للآلام</div>
+                    <h1 class="hero-title">Paracool<br>حل سريع للبرد والكحة</h1>
+                    <p class="hero-subtitle">باراسيتامول 60 مجم/5 مل - شراب فموي</p>
+                    <p class="hero-description">
+                        Paracool هو دواء فعال لخفض الحرارة وتسكين الآلام المصاحبة للبرد والإنفلونزا والكحة. 
+                        تم تصنيعه بدقة وفق أعلى معايير الجودة لضمان الفعالية والأمان، خاصة للأطفال. 
+                        يبدأ مفعوله سريعاً ويوفر راحة فورية من الأعراض المزعجة.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="#features" class="btn">
+                            <i class="fas fa-star"></i>
+                            اكتشف المميزات
+                        </a>
+                        <a href="leaflet.pdf" class="btn btn-secondary" target="_blank">
+                            <i class="fas fa-file-pdf"></i>
+                            النشرة الدوائية
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-visual">
+                    <div class="bottle-container">
+                        <div class="bottle">
+                            <div class="bottle-cap"></div>
+                            <img src="medicine-bottle.png" alt="Paracool Medicine Bottle" class="bottle-image">
+                            <div class="bottle-label">
+                                <div class="bottle-name">Paracool</div>
+                                <div class="bottle-details">Paracetamol</div>
+                                <div class="bottle-details">60 mg/5 ml</div>
+                                <div class="bottle-details">Oral Syrup</div>
+                                <div class="bottle-details">60ml</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- باقي الأقسام تبقى كما هي -->
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">مميزات Paracool</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🌡️</div>
+                    <h3 class="feature-title">خافض فعال للحرارة</h3>
+                    <p class="feature-description">يساعد في تخفيض درجة الحرارة المرتفعة بسرعة وفعالية، ويوفر راحة سريعة من الحمى</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">😌</div>
+                    <h3 class="feature-title">مسكن قوي للآلام</h3>
+                    <p class="feature-description">يخفف الآلام المصاحبة للبرد والإنفلونزا مثل الصداع، آلام الجسم، وآلام الحلق</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👶</div>
+                    <h3 class="feature-title">آمن للأطفال</h3>
+                    <p class="feature-description">تركيبة آمنة ومناسبة للأطفال مع جرعات محددة بدقة حسب العمر والوزن</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3 class="feature-title">مفعول سريع</h3>
+                    <p class="feature-description">يبدأ مفعوله خلال 30 دقيقة ويستمر لمدة 4-6 ساعات لتوفير راحة مستدامة</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🍓</div>
+                    <h3 class="feature-title">طعم لذيذ</h3>
+                    <p class="feature-description">بنكهة الفواكه المحببة للأطفال لتسهيل عملية التناول دون مقاومة</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🩺</div>
+                    <h3 class="feature-title">معتمد طبياً</h3>
+                    <p class="feature-description">معتمد من وزارة الصحة والهيئات الدوائية العالمية، ومصنع وفق معايير GMP</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Usage Section -->
+    <section class="usage" id="usage">
+        <div class="container">
+            <h2 class="section-title">الاستخدامات والجرعات</h2>
+            <div class="usage-content">
+                <div class="usage-text">
+                    <h3 class="usage-title">يستخدم Paracool في الحالات التالية:</h3>
+                    <ul class="usage-list">
+                        <li>خفض الحرارة المرتفعة (الحمى)</li>
+                        <li>تسكين آلام البرد والإنفلونزا</li>
+                        <li>تخفيف الصداع والصداع النصفي</li>
+                        <li>تسكين آلام الأسنان</li>
+                        <li>تخفيف آلام العضلات والمفاصل</li>
+                        <li>تخفيف آلام الدورة الشهرية</li>
+                        <li>الآلام الخفيفة إلى المتوسطة</li>
+                    </ul>
+                    
+                    <h3 class="usage-title">الجرعات الموصى بها:</h3>
+                    <ul class="usage-list">
+                        <li>الأطفال من 1-3 سنوات: 5 مل (60 مجم) كل 4-6 ساعات</li>
+                        <li>الأطفال من 4-6 سنوات: 7.5 مل (90 مجم) كل 4-6 ساعات</li>
+                        <li>الأطفال من 7-9 سنوات: 10 مل (120 مجم) كل 4-6 ساعات</li>
+                        <li>الأطفال من 10-12 سنوات: 15 مل (180 مجم) كل 4-6 ساعات</li>
+                        <li>البالغين والأطفال فوق 12 سنة: 20-30 مل (240-360 مجم) كل 4-6 ساعات</li>
+                    </ul>
+                    
+                    <p><strong>ملاحظة هامة:</strong> لا تتجاوز 4 جرعات في اليوم الواحد. يرجى استشارة الطبيب أو الصيدلي قبل الاستخدام، خاصة للأطفال أقل من سنة.</p>
+                    
+                    <a href="#contact" class="btn btn-outline">
+                        <i class="fas fa-user-md"></i>
+                        استشارة طبية
+                    </a>
+                </div>
+                <div class="usage-visual">
+                    <div class="symptoms">
+                        <div class="symptom">
+                            <div class="symptom-icon">🤒</div>
+                            <p>الحرارة</p>
+                        </div>
+                        <div class="symptom">
+                            <div class="symptom-icon">🤧</div>
+                            <p>البرد</p>
+                        </div>
+                        <div class="symptom">
+                            <div class="symptom-icon">😫</div>
+                            <p>الصداع</p>
+                        </div>
+                        <div class="symptom">
+                            <div class="symptom-icon">🦷</div>
+                            <p>آلام الأسنان</p>
+                        </div>
+                        <div class="symptom">
+                            <div class="symptom-icon">💪</div>
+                            <p>آلام العضلات</p>
+                        </div>
+                        <div class="symptom">
+                            <div class="symptom-icon">😣</div>
+                            <p>آلام المفاصل</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Leaflet Section -->
+    <section class="leaflet" id="leaflet">
+        <div class="container">
+            <div class="leaflet-content">
+                <h2 class="section-title">النشرة الدوائية</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 30px; max-width: 700px; margin-left: auto; margin-right: auto;">
+                    للحصول على معلومات كاملة عن دواء Paracool بما في ذلك التركيبة، indications، contraindications، الآثار الجانبية، والتحذيرات الهامة، يرجى تحميل النشرة الدوائية الكاملة.
+                </p>
+                <a href="leaflet.pdf" class="btn btn-secondary" target="_blank" style="margin-bottom: 40px;">
+                    <i class="fas fa-download"></i>
+                    تحميل النشرة الدوائية (PDF)
+                </a>
+                <div style="background: var(--light); padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
+                    <h3 style="color: var(--primary); margin-bottom: 20px;">معلومات سريعة:</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; text-align: right;">
+                        <div>
+                            <h4 style="color: var(--dark); margin-bottom: 10px;">التحذيرات:</h4>
+                            <p>• لا تستخدم إذا كان لديك حساسية من الباراسيتامول</p>
+                            <p>• تجنب الجرعات الزائدة</p>
+                            <p>• استشر الطبيب عند الحمل أو الرضاعة</p>
+                        </div>
+                        <div>
+                            <h4 style="color: var(--dark); margin-bottom: 10px;">طريقة التخزين:</h4>
+                            <p>• احفظ في مكان بارد وجاف</p>
+                            <p>• بعيداً عن متناول الأطفال</p>
+                            <p>• لا تستخدم بعد انتهاء الصلاحية</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>عن Paracool</h3>
+                    <p>Paracool هو دواء خافض للحرارة ومسكن للآلام يحتوي على المادة الفعالة باراسيتامول، مصمم خصيصاً ليكون آمناً وفعالاً للأطفال والكبار. يتميز ببدء مفعول سريع وتأثير طويل المدى.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h3>روابط سريعة</h3>
+                    <a href="#home">الرئيسية</a>
+                    <a href="#features">المميزات</a>
+                    <a href="#usage">الاستخدامات</a>
+                    <a href="#leaflet">النشرة الدوائية</a>
+                    <a href="#contact">اتصل بنا</a>
+                </div>
+                <div class="footer-section">
+                    <h3>معلومات الاتصال</h3>
+                    <p><i class="fas fa-phone"></i> الهاتف: 011260955069</p>
+                    <p><i class="fas fa-envelope"></i> البريد الإلكتروني: mohosam20052@gmail.com</p>
+                    <p><i class="fas fa-map-marker-alt"></i> العنوان: القاهرة، مصر</p>
+                    <p><i class="fas fa-clock"></i> ساعات العمل: من الأحد إلى الخميس 9ص-5م</p>
+                </div>
+                <div class="footer-section">
+                    <h3>تحذيرات هامة</h3>
+                    <p>• لا تستخدم الدواء إذا كان لديك حساسية من الباراسيتامول</p>
+                    <p>• التزم بالجرعات الموصى بها ولا تزد الجرعة</p>
+                    <p>• استشر الطبيب قبل الاستخدام للأطفال أقل من سنة</p>
+                    <p>• احفظ الدواء في مكان بارد وجاف وبعيد عن الضوء</p>
+                    <p>• ابتعد عن متناول الأطفال</p>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>© 2023 Paracool. جميع الحقوق محفوظة | تم التطوير بواسطة فريق Paracool</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Create particle background
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const size = Math.random() * 30 + 10;
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const animationDuration = Math.random() * 30 + 20;
+                const animationDelay = Math.random() * 10;
+                const opacity = Math.random() * 0.1 + 0.05;
+                
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.right = `${posX}%`;
+                particle.style.top = `${posY}%`;
+                particle.style.animationDuration = `${animationDuration}s`;
+                particle.style.animationDelay = `${animationDelay}s`;
+                particle.style.opacity = opacity;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Header scroll effect - Hide on scroll down, show on scroll up
+        let lastScrollTop = 0;
+        const header = document.getElementById('header');
+        
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const floatingNav = document.getElementById('floatingNav');
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                // Scrolling down & past 100px - hide header
+                header.classList.add('hidden');
+            } else {
+                // Scrolling up - show header
+                header.classList.remove('hidden');
+                
+                // Make header compact when scrolled
+                if (scrollTop > 50) {
+                    header.classList.add('compact');
+                } else {
+                    header.classList.remove('compact');
+                }
+            }
+            
+            lastScrollTop = scrollTop;
+            
+            // Show/hide floating nav based on scroll position
+            if (scrollTop > 300) {
+                floatingNav.classList.remove('hidden');
+            } else {
+                floatingNav.classList.add('hidden');
+            }
+            
+            // Update active nav dot based on scroll position
+            updateActiveNavDot();
+        });
+        
+        // Update active navigation dot based on scroll position
+        function updateActiveNavDot() {
+            const sections = document.querySelectorAll('section');
+            const navDots = document.querySelectorAll('.nav-dot');
+            
+            let currentSection = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - 100;
+                const sectionHeight = section.clientHeight;
+                
+                if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+            
+            navDots.forEach(dot => {
+                dot.classList.remove('active');
+                if (dot.getAttribute('data-section') === currentSection) {
+                    dot.classList.add('active');
+                }
+            });
+        }
+        
+        // Floating nav dot click handler
+        document.querySelectorAll('.nav-dot').forEach(dot => {
+            dot.addEventListener('click', function() {
+                const targetSection = this.getAttribute('data-section');
+                const targetElement = document.getElementById(targetSection);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Animation on scroll
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe feature cards
+            const featureCards = document.querySelectorAll('.feature-card');
+            featureCards.forEach((card, index) => {
+                card.style.opacity = 0;
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = `opacity 0.6s ease, transform 0.6s ease`;
+                card.style.transitionDelay = `${index * 0.1}s`;
+                observer.observe(card);
+            });
+            
+            // Observe symptoms
+            const symptoms = document.querySelectorAll('.symptom');
+            symptoms.forEach((symptom, index) => {
+                symptom.style.opacity = 0;
+                symptom.style.transform = 'translateY(30px)';
+                symptom.style.transition = `opacity 0.6s ease, transform 0.6s ease`;
+                symptom.style.transitionDelay = `${index * 0.1}s`;
+                observer.observe(symptom);
+            });
+            
+            // Observe usage list items
+            const usageItems = document.querySelectorAll('.usage-list li');
+            usageItems.forEach((item, index) => {
+                item.style.opacity = 0;
+                item.style.transform = 'translateX(30px)';
+                item.style.transition = `opacity 0.5s ease, transform 0.5s ease`;
+                item.style.transitionDelay = `${index * 0.05}s`;
+                observer.observe(item);
+            });
+        });
+
+        // Add loading animation for images
+        window.addEventListener('load', function() {
+            document.body.classList.add('loaded');
+        });
+    </script>
+</body>
+</html>
